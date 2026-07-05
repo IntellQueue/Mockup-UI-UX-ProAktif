@@ -1,11 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Shield, Eye, EyeOff, LayoutDashboard, CalendarDays, Users, FileText,
   Bell, LogOut, Plus, X, ChevronRight, MapPin, Clock, Tag, AlertTriangle,
   CheckCircle, MessageSquare, Video, Navigation, Upload, Send, Search,
   Edit2, Trash2, Save, ChevronDown, Activity, Phone, AlertCircle,
   Car, Flag, Zap, History, FilePlus, FileCheck, UserPlus, UserMinus,
-  RefreshCw, Download, Eye as EyeIcon, XCircle,
+  RefreshCw, Download, Eye as EyeIcon, XCircle, Key,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -44,6 +44,7 @@ interface Pejabat {
   status: "aktif" | "pensiun" | "mutasi";
   noHP: string;
   nip: string;
+  password?: string;
   riwayat: RiwayatPejabat[];
 }
 
@@ -80,7 +81,7 @@ const seedPejabat: Pejabat[] = [
   {
     id: "PJB-001", inisial: "RK", status: "aktif",
     nama: "H. Ridwan Kamil, S.T., M.U.D.", jabatan: "Gubernur", instansi: "Pemerintah Provinsi Banten",
-    eselon: "Jabatan Politik", nip: "—", noHP: "+62811-2222-0001",
+    eselon: "Jabatan Politik", nip: "—", noHP: "+62811-2222-0001", password: "pimpinan",
     riwayat: [
       { id: "R1", jenis: "pelantikan", jabatanLama: "Walikota Serang", jabatanBaru: "Gubernur Banten", instansiLama: "Pemkot Serang", instansiBaru: "Pemprov Banten", tanggal: "2018-09-05", noSK: "SK.PRESIDEN/2018/BTN-GOV", keterangan: "Pelantikan Gubernur periode 2018–2023 oleh Presiden RI" },
       { id: "R2", jenis: "pelantikan", jabatanLama: "Gubernur Banten", jabatanBaru: "Gubernur Banten", instansiLama: "Pemprov Banten", instansiBaru: "Pemprov Banten", tanggal: "2023-09-05", noSK: "SK.PRESIDEN/2023/BTN-GOV", keterangan: "Pelantikan kembali Gubernur periode 2023–2028" },
@@ -89,7 +90,7 @@ const seedPejabat: Pejabat[] = [
   {
     id: "PJB-002", inisial: "RU", status: "aktif",
     nama: "Dr. H. Uu Ruzhanul Ulum, S.E., M.Si.", jabatan: "Wakil Gubernur", instansi: "Pemerintah Provinsi Banten",
-    eselon: "Jabatan Politik", nip: "—", noHP: "+62812-4444-0002",
+    eselon: "Jabatan Politik", nip: "—", noHP: "+62812-4444-0002", password: "pimpinan",
     riwayat: [
       { id: "R1", jenis: "pelantikan", jabatanLama: "Bupati Pandeglang", jabatanBaru: "Wakil Gubernur Banten", instansiLama: "Pemkab Pandeglang", instansiBaru: "Pemprov Banten", tanggal: "2018-09-05", noSK: "SK.PRESIDEN/2018/BTN-WAGOV", keterangan: "Pelantikan Wakil Gubernur bersama Gubernur" },
     ],
@@ -97,7 +98,7 @@ const seedPejabat: Pejabat[] = [
   {
     id: "PJB-003", inisial: "SW", status: "aktif",
     nama: "Dr. Ir. Setiawan Wangsaatmaja, Dipl.SE., M.Eng.", jabatan: "Sekretaris Daerah", instansi: "Sekretariat Daerah Prov. Banten",
-    eselon: "Eselon I-A", nip: "196612251994031001", noHP: "+62813-6666-0003",
+    eselon: "Eselon I-A", nip: "196612251994031001", noHP: "+62813-6666-0003", password: "pimpinan",
     riwayat: [
       { id: "R1", jenis: "mutasi", jabatanLama: "Kepala Bappeda Prov. Banten", jabatanBaru: "Sekretaris Daerah Prov. Banten", instansiLama: "Bappeda Banten", instansiBaru: "Setda Prov. Banten", tanggal: "2021-03-15", noSK: "SK.GUB/2021/SETDA-001", keterangan: "Mutasi jabatan eselon I berdasarkan keputusan Gubernur" },
     ],
@@ -105,7 +106,7 @@ const seedPejabat: Pejabat[] = [
   {
     id: "PJB-004", inisial: "SA", status: "aktif",
     nama: "Hj. Siti Aminah, S.H., M.H.", jabatan: "Kepala Biro Administrasi Pimpinan", instansi: "Sekretariat Daerah Prov. Banten",
-    eselon: "Eselon II-A", nip: "197205141998032002", noHP: "+62815-1111-0004",
+    eselon: "Eselon II-A", nip: "197205141998032002", noHP: "+62815-1111-0004", password: "pimpinan",
     riwayat: [
       { id: "R1", jenis: "pelantikan", jabatanLama: "Kabag Protokol & Humas", jabatanBaru: "Kepala Biro Administrasi Pimpinan", instansiLama: "Setda Prov. Banten", instansiBaru: "Setda Prov. Banten", tanggal: "2022-01-10", noSK: "SK.GUB/2022/BIRO-ADM-001", keterangan: "Pelantikan Kepala Biro berdasarkan restrukturisasi organisasi" },
     ],
@@ -113,7 +114,7 @@ const seedPejabat: Pejabat[] = [
   {
     id: "PJB-005", inisial: "BS", status: "aktif",
     nama: "Drs. H. Budi Santosa, M.M.", jabatan: "Kepala Bagian Protokol", instansi: "Biro Administrasi Pimpinan",
-    eselon: "Eselon III-A", nip: "196803122000121001", noHP: "+62816-3333-0005",
+    eselon: "Eselon III-A", nip: "196803122000121001", noHP: "+62816-3333-0005", password: "pimpinan",
     riwayat: [
       { id: "R1", jenis: "mutasi", jabatanLama: "Kasubbag Protokol Kab. Serang", jabatanBaru: "Kepala Bagian Protokol Prov.", instansiLama: "Pemkab Serang", instansiBaru: "Biro Adm Pimpinan", tanggal: "2020-07-20", noSK: "SK.GUB/2020/PROT-BAG-002", keterangan: "Mutasi antar instansi pemerintah provinsi" },
     ],
@@ -121,14 +122,20 @@ const seedPejabat: Pejabat[] = [
   {
     id: "PJB-006", inisial: "HW", status: "pensiun",
     nama: "Drs. Hendra Wijaya, M.Si.", jabatan: "Staf Ahli Gubernur Bid. Kemasyarakatan", instansi: "Pemerintah Provinsi Banten",
-    eselon: "Eselon II-B", nip: "196002151985031004", noHP: "+62817-5555-0006",
+    eselon: "Eselon II-B", nip: "196002151985031004", noHP: "+62817-5555-0006", password: "pimpinan",
     riwayat: [
       { id: "R1", jenis: "pensiun", jabatanLama: "Staf Ahli Gubernur", jabatanBaru: "—", instansiLama: "Pemprov Banten", instansiBaru: "—", tanggal: "2026-06-01", noSK: "SK.BKN/2026/PENSIUN-0128", keterangan: "Pensiun karena mencapai batas usia pensiun 60 tahun" },
     ],
   },
 ];
 
-const TODAY = "2026-07-05";
+const getLocalDateString = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+const TODAY = getLocalDateString(new Date());
 
 const seedEvents: Event[] = [
   {
@@ -189,6 +196,7 @@ const statusPimpinanCfg = {
   otw:     { label: "OTW",      color: "text-blue-700",  bg: "bg-blue-50 border-blue-200",   icon: <Car className="w-3 h-3" /> },
   hadir:   { label: "Hadir",    color: "text-primary",   bg: "bg-green-50 border-green-200", icon: <CheckCircle className="w-3 h-3" /> },
   tunda:   { label: "Tunda",    color: "text-amber-700", bg: "bg-amber-50 border-amber-200", icon: <AlertTriangle className="w-3 h-3" /> },
+  diwakilkan: { label: "Diwakilkan", color: "text-purple-700", bg: "bg-purple-50 border-purple-200", icon: <UserMinus className="w-3 h-3" /> },
   batal:   { label: "Batal",    color: "text-destructive", bg: "bg-red-50 border-red-200",   icon: <XCircle className="w-3 h-3" /> },
 };
 
@@ -222,7 +230,7 @@ const initials = (n: string) => n.split(" ").slice(0, 2).map(w => w[0]).join("")
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
-function LoginPage({ onLogin }: { onLogin: (role: Role, name: string) => void }) {
+function LoginPage({ onLogin, pejabat }: { onLogin: (role: Role, name: string, pejabatId?: string) => void; pejabat: Pejabat[] }) {
   const [role, setRole] = useState<Role>("protokoler");
   const [nip, setNip] = useState("");
   const [pass, setPass] = useState("");
@@ -230,9 +238,9 @@ function LoginPage({ onLogin }: { onLogin: (role: Role, name: string) => void })
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const creds: Record<Role, { nip: string; pass: string; name: string }> = {
+  const creds = {
     protokoler: { nip: "protokol", pass: "admin123", name: "Hj. Siti Aminah, S.H., M.H." },
-    pimpinan:   { nip: "gubernur", pass: "pimpinan", name: "H. Ridwan Kamil, S.T., M.U.D." },
+    pimpinan:   { nip: "gubernur", pass: "pimpinan" },
   };
 
   const submit = (e: React.FormEvent) => {
@@ -241,9 +249,35 @@ function LoginPage({ onLogin }: { onLogin: (role: Role, name: string) => void })
     if (!nip || !pass) { setErr("NIP dan kata sandi wajib diisi."); return; }
     setLoading(true);
     setTimeout(() => {
-      const c = creds[role];
-      if (nip === c.nip && pass === c.pass) onLogin(role, c.name);
-      else { setErr("Kredensial tidak valid. Akses ditolak."); setLoading(false); }
+      if (role === "protokoler") {
+        const c = creds.protokoler;
+        if (nip === c.nip && pass === c.pass) {
+          onLogin("protokoler", c.name);
+        } else {
+          setErr("Kredensial tidak valid. Akses ditolak.");
+          setLoading(false);
+        }
+      } else {
+        // Pimpinan
+        if (nip.toLowerCase() === "gubernur" && pass === "pimpinan") {
+          const gov = pejabat.find(p => p.id === "PJB-001") || pejabat[0];
+          onLogin("pimpinan", gov?.nama || "H. Ridwan Kamil, S.T., M.U.D.", gov?.id);
+        } else {
+          const found = pejabat.find(p => p.nip === nip);
+          if (found) {
+            const expectedPass = found.password || "pimpinan";
+            if (pass === expectedPass) {
+              onLogin("pimpinan", found.nama, found.id);
+            } else {
+              setErr("Kata sandi salah. Gunakan sandi default pimpinan jika belum diubah.");
+              setLoading(false);
+            }
+          } else {
+            setErr("NIP Pejabat tidak terdaftar atau kata sandi salah.");
+            setLoading(false);
+          }
+        }
+      }
     }, 800);
   };
 
@@ -277,7 +311,7 @@ function LoginPage({ onLogin }: { onLogin: (role: Role, name: string) => void })
           <form onSubmit={submit} className="space-y-3">
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1">NIP / Akun</label>
-              <input value={nip} onChange={e => setNip(e.target.value)} placeholder={creds[role].nip}
+              <input value={nip} onChange={e => setNip(e.target.value)} placeholder={role === "protokoler" ? "protokol" : "gubernur / NIP (18 digit)"}
                 className="w-full bg-input-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10" />
             </div>
             <div>
@@ -300,7 +334,7 @@ function LoginPage({ onLogin }: { onLogin: (role: Role, name: string) => void })
             </button>
           </form>
           <p className="text-[11px] text-muted-foreground text-center mt-4 pt-3 border-t border-border">
-            Demo · <span className="font-mono text-primary">{creds[role].nip}</span> / <span className="font-mono text-primary">{creds[role].pass}</span>
+            Demo · <span className="font-mono text-primary">{role === "protokoler" ? "protokol" : "gubernur"}</span> / <span className="font-mono text-primary">{role === "protokoler" ? "admin123" : "pimpinan"}</span>
           </p>
         </div>
         <p className="text-center text-white/30 text-[10px] font-mono mt-5 tracking-wider">AKSES TERBATAS — PERSONEL BERWENANG</p>
@@ -356,12 +390,65 @@ function AdminSidebar({ view, setView, onLogout, name }: { view: View; setView: 
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────────
 
-function AdminDashboard({ events, setView }: { events: Event[]; setView: (v: View) => void }) {
+function AdminDashboard({ events, setView, pejabat }: { events: Event[]; setView: (v: View) => void; pejabat: Pejabat[] }) {
   const today = events.filter(e => e.tanggal === TODAY);
+  const [snoozed, setSnoozed] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedPejabat, setSelectedPejabat] = useState<Pejabat | null>(null);
+
+  // Check for emergency alerts (event starts in < 30 minutes, statusPimpinan contains "menunggu")
+  const mockCurrentMinutes = 9 * 60 + 45; // Mock current time 09:45
+  
+  const emergencyEvents = today.filter(ev => {
+    if (ev.status !== "akan_datang") return false;
+    const [h, m] = ev.waktu.split(":").map(Number);
+    const evMinutes = h * 60 + m;
+    const diff = evMinutes - mockCurrentMinutes;
+    const hasUnresponsive = Object.entries(ev.statusPimpinan).some(([pjbId, status]) => {
+      const pjb = pejabat.find(p => p.id === pjbId);
+      return status === "menunggu" && pjb?.status === "aktif";
+    });
+    return diff > 0 && diff <= 30 && hasUnresponsive;
+  });
+
+  useEffect(() => {
+    if (emergencyEvents.length > 0 && !snoozed) {
+      let ctx: AudioContext | null = null;
+      let timer: any = null;
+      const startAudio = () => {
+        try {
+          ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const playNote = () => {
+            if (!ctx || ctx.state === "suspended") return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            gain.gain.setValueAtTime(0.04, ctx.currentTime);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            setTimeout(() => { try { osc.stop(); } catch(e) {} }, 200);
+          };
+          playNote();
+          timer = setInterval(playNote, 2500);
+        } catch (e) {
+          console.warn("Audio Context blocked:", e);
+        }
+      };
+
+      startAudio();
+      return () => {
+        if (timer) clearInterval(timer);
+        if (ctx) ctx.close();
+      };
+    }
+  }, [emergencyEvents.length, snoozed]);
+
   const stats = [
     { label: "Agenda Hari Ini", value: today.length, icon: <CalendarDays className="w-5 h-5" />, color: "text-primary", bg: "bg-secondary" },
     { label: "Berlangsung",     value: today.filter(e => e.status === "berlangsung").length, icon: <Activity className="w-5 h-5" />, color: "text-emerald-700", bg: "bg-green-50" },
-    { label: "Total Pejabat",   value: seedPejabat.filter(p => p.status === "aktif").length, icon: <Users className="w-5 h-5" />, color: "text-blue-700", bg: "bg-blue-50" },
+    { label: "Total Pejabat",   value: pejabat.filter(p => p.status === "aktif").length, icon: <Users className="w-5 h-5" />, color: "text-blue-700", bg: "bg-blue-50" },
     { label: "Dokumen Upload",  value: events.reduce((a, e) => a + e.files.length, 0), icon: <FileText className="w-5 h-5" />, color: "text-amber-700", bg: "bg-amber-50" },
   ];
 
@@ -369,7 +456,7 @@ function AdminDashboard({ events, setView }: { events: Event[]; setView: (v: Vie
     <div className="flex-1 overflow-y-auto p-7 space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-mono text-muted-foreground tracking-widest uppercase">Sabtu, 05 Juli 2026</p>
+          <p className="text-xs font-mono text-muted-foreground tracking-widest uppercase">{new Date().toLocaleDateString("id-ID", { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</p>
           <h1 className="text-2xl font-bold text-foreground mt-1" style={{ fontFamily: "'Libre Baskerville', serif" }}>Dasbor Protokoler</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Pantau agenda & status pimpinan secara real-time.</p>
         </div>
@@ -378,6 +465,61 @@ function AdminDashboard({ events, setView }: { events: Event[]; setView: (v: Vie
           <span className="text-xs text-primary font-semibold">Sistem Aktif</span>
         </div>
       </div>
+
+      {emergencyEvents.length > 0 && (
+        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-5 flex items-start gap-4 relative overflow-hidden transition-all duration-300">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {!snoozed && (
+              <div className="flex gap-0.5 items-center mr-1">
+                <div className="w-1 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-1 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-1 h-3 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+            )}
+            <button onClick={() => setSnoozed(!snoozed)} className="text-xs bg-red-100 hover:bg-red-200 text-red-800 font-bold px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm">
+              {snoozed ? "🔊 Bunyikan Sirine" : "🔕 Senyapkan Sirine"}
+            </button>
+          </div>
+          <div className="w-12 h-12 bg-red-500 text-white rounded-2xl flex items-center justify-center flex-shrink-0 animate-bounce shadow-md">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div className="space-y-3 flex-1 pr-44">
+            <div>
+              <h3 className="text-sm font-bold text-red-900 tracking-wide uppercase flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
+                ⚠️ SISTEM MITIGASI: Pimpinan Belum Respons (&lt; 30 Menit)
+              </h3>
+              <p className="text-xs text-red-700 mt-0.5 font-medium">Acara segera dimulai namun pimpinan yang ditag belum memberikan status kehadiran.</p>
+            </div>
+            {emergencyEvents.map(ev => {
+              const unresponsiveNames = Object.entries(ev.statusPimpinan)
+                .filter(([_, status]) => status === "menunggu")
+                .map(([pjbId, _]) => pejabat.find(p => p.id === pjbId)?.nama || pjbId);
+
+              return (
+                <div key={ev.id} className="bg-white rounded-xl p-4 border border-red-100 space-y-2 shadow-sm">
+                  <p className="text-xs font-bold text-red-950 font-serif leading-snug">{ev.judul}</p>
+                  <p className="text-[11px] text-red-800 font-semibold flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />Mulai: {ev.waktu} WIB ({ev.tempat})</p>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-red-950">
+                    <span className="font-bold">Menunggu Konfirmasi:</span>
+                    {unresponsiveNames.map(name => (
+                      <span key={name} className="bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-lg font-bold">{name.split(",")[0]}</span>
+                    ))}
+                  </div>
+                  <div className="pt-2 flex items-center gap-3">
+                    <a href={`https://wa.me/628123456789?text=Halo%20Protokol%2C%20mohon%20konfirmasi%20kehadiran%20Pimpinan%20untuk%20acara%20${encodeURIComponent(ev.judul)}%20yang%20akan%20dimulai%20dalam%2015%20menit.`}
+                      target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl transition-colors shadow-sm">
+                      <MessageSquare className="w-3.5 h-3.5" />Hubungi Ajudan via WA
+                    </a>
+                    <button onClick={() => setView("agenda")} className="text-xs text-red-700 font-bold hover:underline">Kelola Agenda & Delegasi</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map(s => (
@@ -398,16 +540,20 @@ function AdminDashboard({ events, setView }: { events: Event[]; setView: (v: Vie
         </div>
         <div className="space-y-3">
           {today.map(ev => (
-            <div key={ev.id} className="bg-card border border-border rounded-2xl p-5 hover:border-primary/20 transition-all">
+            <div key={ev.id} onClick={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
+              className="bg-card border border-border rounded-2xl p-5 hover:border-primary/20 transition-all cursor-pointer select-none">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${eventStatusCfg[ev.status].cls}`}>{eventStatusCfg[ev.status].label}</span>
-                    <span className={`w-2 h-2 rounded-full ${prioritasCfg[ev.prioritas].dot}`} />
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${(eventStatusCfg[ev.status] || eventStatusCfg.akan_datang).cls}`}>{(eventStatusCfg[ev.status] || eventStatusCfg.akan_datang).label}</span>
+                    <span className={`w-2 h-2 rounded-full ${(prioritasCfg[ev.prioritas] || prioritasCfg.sedang).dot}`} />
                     {ev.notifikasi && <Bell className="w-3 h-3 text-amber-500" />}
                     {ev.files.length > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><FileText className="w-3 h-3" />{ev.files.length} dok</span>}
                   </div>
                   <h3 className="font-semibold text-foreground text-sm">{ev.judul}</h3>
+                </div>
+                <div className="text-muted-foreground p-1 hover:text-primary transition-colors flex-shrink-0">
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${expandedId === ev.id ? "rotate-180" : ""}`} />
                 </div>
               </div>
               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-3">
@@ -415,14 +561,50 @@ function AdminDashboard({ events, setView }: { events: Event[]; setView: (v: Vie
                 <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-primary" />{ev.tempat}</span>
                 <span className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-primary" />{ev.dresscode}</span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              {expandedId === ev.id && (
+                <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-border space-y-3 mb-3 animate-fadeIn">
+                  <div>
+                    <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Deskripsi Kegiatan</h4>
+                    <p className="text-xs text-foreground mt-1 leading-relaxed bg-muted/40 p-3 rounded-xl border border-border/50">
+                      {ev.deskripsi || "Tidak ada deskripsi detail untuk kegiatan ini."}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+                    <div className="bg-secondary/40 p-2 rounded-xl border border-border/50">
+                      <span className="text-[9px] text-muted-foreground block font-medium">Kategori</span>
+                      <span className="font-bold text-foreground mt-0.5 block">{ev.kategori || "Rapat"}</span>
+                    </div>
+                    <div className="bg-secondary/40 p-2 rounded-xl border border-border/50">
+                      <span className="text-[9px] text-muted-foreground block font-medium">Prioritas</span>
+                      <span className="font-bold text-foreground mt-0.5 block capitalize">{ev.prioritas || "Sedang"}</span>
+                    </div>
+                    <div className="bg-secondary/40 p-2 rounded-xl border border-border/50">
+                      <span className="text-[9px] text-muted-foreground block font-medium">Estimasi Peserta</span>
+                      <span className="font-bold text-foreground mt-0.5 block">{ev.pesertaCount || 0} orang</span>
+                    </div>
+                    <div className="bg-secondary/40 p-2 rounded-xl border border-border/50">
+                      <span className="text-[9px] text-muted-foreground block font-medium">Koordinat Peta</span>
+                      {ev.koordinatMaps ? (
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.koordinatMaps)}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+                          className="text-primary hover:underline font-bold mt-0.5 flex items-center gap-1">
+                          <Navigation className="w-3 h-3" /> {ev.koordinatMaps}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground mt-0.5 block font-semibold">—</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div onClick={(e) => e.stopPropagation()} className="flex flex-wrap gap-2">
                 {Object.entries(ev.statusPimpinan).map(([pjbId, st]) => {
-                  const pjb = seedPejabat.find(p => p.id === pjbId);
+                  const pjb = pejabat.find(p => p.id === pjbId);
                   if (!pjb) return null;
-                  const cfg = statusPimpinanCfg[st as keyof typeof statusPimpinanCfg];
+                  const cfg = statusPimpinanCfg[st as keyof typeof statusPimpinanCfg] || statusPimpinanCfg.menunggu;
                   return (
-                    <div key={pjbId} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${cfg.bg} ${cfg.color}`}>
-                      {cfg.icon}<span>{pjb.nama.split(" ").slice(-2).join(" ").replace(",", "")}</span><span className="opacity-60">· {cfg.label}</span>
+                    <div key={pjbId} onClick={() => setSelectedPejabat(pjb)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${cfg.bg} ${cfg.color} cursor-pointer hover:scale-[1.02] transition-transform`}>
+                      {cfg.icon}<span>{pjb.nama.split(",")[0]}</span><span className="opacity-60">· {cfg.label}</span>
                     </div>
                   );
                 })}
@@ -440,6 +622,109 @@ function AdminDashboard({ events, setView }: { events: Event[]; setView: (v: Vie
           <p className="text-xs text-amber-700 mt-0.5">WA Gateway & Push akan terkirim H-1 dan 2 jam sebelum setiap acara bernotifikasi.</p>
         </div>
       </div>
+
+      {/* Detail Profil Pejabat Modal */}
+      {selectedPejabat && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedPejabat(null)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-foreground">Detail Profil Pejabat</h3>
+              </div>
+              <button onClick={() => setSelectedPejabat(null)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 bg-secondary/10">
+              <div className="flex items-center gap-4 bg-card border border-border p-4 rounded-xl">
+                <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center text-lg font-bold flex-shrink-0">
+                  {selectedPejabat.inisial}
+                </div>
+                <div>
+                  <h4 className="font-bold text-foreground text-sm leading-snug">{selectedPejabat.nama}</h4>
+                  <p className="text-xs text-primary font-semibold mt-0.5">{selectedPejabat.jabatan}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{selectedPejabat.instansi}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 bg-card border border-border p-4 rounded-xl text-xs">
+                <div className="grid grid-cols-3 py-1 border-b border-border/50">
+                  <span className="text-muted-foreground font-medium">NIP</span>
+                  <span className="col-span-2 font-semibold text-foreground text-right">{selectedPejabat.nip || "—"}</span>
+                </div>
+                <div className="grid grid-cols-3 py-1 border-b border-border/50">
+                  <span className="text-muted-foreground font-medium">Eselon</span>
+                  <span className="col-span-2 font-semibold text-foreground text-right">{selectedPejabat.eselon || "—"}</span>
+                </div>
+                <div className="grid grid-cols-3 py-1 border-b border-border/50">
+                  <span className="text-muted-foreground font-medium">No. HP / WA</span>
+                  <span className="col-span-2 font-semibold text-foreground text-right">{selectedPejabat.noHP || "—"}</span>
+                </div>
+                <div className="grid grid-cols-3 py-1">
+                  <span className="text-muted-foreground font-medium">Status</span>
+                  <span className={`col-span-2 font-bold text-right ${selectedPejabat.status === "aktif" ? "text-emerald-600" : "text-amber-600"}`}>
+                    {selectedPejabat.status === "aktif" ? "Aktif" : "Pensiun / Non-Aktif"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <h5 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <History className="w-3.5 h-3.5 text-primary" /> Riwayat Jabatan & Mutasi
+                </h5>
+                <div className="space-y-2.5">
+                  {selectedPejabat.riwayat && selectedPejabat.riwayat.length > 0 ? (
+                    selectedPejabat.riwayat.map((rw) => (
+                      <div key={rw.id} className="bg-card border border-border p-3 rounded-xl text-xs">
+                        <div className="flex items-center justify-between font-bold text-foreground">
+                          <span className="capitalize text-primary text-[10px] bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">
+                            {rw.jenis}
+                          </span>
+                          <span className="text-muted-foreground text-[10px]">{rw.tanggal}</span>
+                        </div>
+                        <p className="mt-2 text-foreground font-semibold">
+                          {rw.jabatanLama === "—" ? "" : `${rw.jabatanLama} ➔ `}{rw.jabatanBaru}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {rw.instansiLama === "—" ? "" : `${rw.instansiLama} ➔ `}{rw.instansiBaru}
+                        </p>
+                        {rw.noSK && (
+                          <p className="text-[9px] font-mono bg-muted px-2 py-0.5 rounded mt-1.5 w-fit text-muted-foreground">
+                            SK: {rw.noSK}
+                          </p>
+                        )}
+                        {rw.keterangan && (
+                          <p className="text-[10px] text-muted-foreground mt-1.5 italic">
+                            "{rw.keterangan}"
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic text-center py-4 bg-card border border-border border-dashed rounded-xl">
+                      Belum ada riwayat jabatan tercatat.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {selectedPejabat.noHP && selectedPejabat.noHP !== "—" && (
+                <a href={`https://wa.me/${selectedPejabat.noHP.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-semibold shadow-sm transition-colors mt-2">
+                  <MessageSquare className="w-4 h-4" /> Hubungi via WhatsApp
+                </a>
+              )}
+            </div>
+            
+            <div className="px-6 py-4 border-t border-border flex justify-end flex-shrink-0">
+              <button onClick={() => setSelectedPejabat(null)}
+                className="px-4 py-2 text-xs border border-border rounded-xl hover:bg-muted text-muted-foreground font-semibold">
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -534,15 +819,17 @@ function FileUploadZone({ files, onAdd, onRemove }: {
 
 // ─── Agenda Management ────────────────────────────────────────────────────────
 
-function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (e: Event[]) => void }) {
+function AgendaManagement({ events, setEvents, pejabat, chats, setChats }: { events: Event[]; setEvents: (e: Event[]) => void; pejabat: Pejabat[]; chats: Record<string, ChatMsg[]>; setChats: React.Dispatch<React.SetStateAction<Record<string, ChatMsg[]>>> }) {
   const [filter, setFilter] = useState("semua");
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Event | null>(null);
   const [showChat, setShowChat] = useState<string | null>(null);
   const [chatMsg, setChatMsg] = useState("");
-  const [chats, setChats] = useState<Record<string, ChatMsg[]>>(seedChats);
   const [form, setForm] = useState<Partial<Event>>({ prioritas: "sedang", status: "akan_datang", kategori: "Rapat", pejabatIds: [], statusPimpinan: {}, notifikasi: false, files: [] });
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedPejabat, setSelectedPejabat] = useState<Pejabat | null>(null);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
 
   const filtered = events.filter(e => {
     const matchF = filter === "semua" || e.status === filter || (filter === "hari_ini" && e.tanggal === TODAY);
@@ -585,11 +872,16 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
     const msg: ChatMsg = { id: `cm${Date.now()}`, sender: "Protokoler", isi: chatMsg, waktu: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }), type: "text" };
     setChats(prev => ({ ...prev, [evId]: [...(prev[evId] || []), msg] }));
     setChatMsg("");
+    setTimeout(() => {
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      }
+    }, 50);
   };
 
   const tabs = [
     { val: "semua", label: "Semua" }, { val: "hari_ini", label: "Hari Ini" },
-    { val: "akan_datang", label: "Akan Datang" }, { val: "berlangsung", label: "Berlangsung" }, { val: "selesai", label: "Selesai" },
+    { val: "akan_datang", label: "Akan Datang" }, { val: "berlangsung", label: "Berlangsung" }, { val: "selesai", label: "Selesai" }, { val: "dibatalkan", label: "Dibatalkan" },
   ];
 
   return (
@@ -623,14 +915,15 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
 
       <div className="space-y-3">
         {filtered.map(ev => (
-          <div key={ev.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/20 hover:shadow-sm transition-all">
+          <div key={ev.id} onClick={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
+            className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/20 hover:shadow-sm transition-all cursor-pointer select-none">
             <div className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${eventStatusCfg[ev.status].cls}`}>{eventStatusCfg[ev.status].label}</span>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${(eventStatusCfg[ev.status] || eventStatusCfg.akan_datang).cls}`}>{(eventStatusCfg[ev.status] || eventStatusCfg.akan_datang).label}</span>
                     <span className="text-[11px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{ev.kategori}</span>
-                    <span className={`w-2 h-2 rounded-full ${prioritasCfg[ev.prioritas].dot}`} />
+                    <span className={`w-2 h-2 rounded-full ${(prioritasCfg[ev.prioritas] || prioritasCfg.sedang).dot}`} />
                     {ev.notifikasi && <Bell className="w-3 h-3 text-amber-500" />}
                     {ev.files.length > 0 && (
                       <span className="flex items-center gap-1 text-[11px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full">
@@ -650,17 +943,56 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
                     </div>
                   )}
                 </div>
-                <div className="flex gap-1 flex-shrink-0">
-                  <button onClick={() => setShowChat(showChat === ev.id ? null : ev.id)}
+                <div className="flex gap-1 flex-shrink-0 items-center">
+                  <button onClick={(e) => { e.stopPropagation(); setShowChat(showChat === ev.id ? null : ev.id); }}
                     className="p-2 rounded-xl hover:bg-secondary text-muted-foreground hover:text-primary transition-colors relative">
                     <MessageSquare className="w-4 h-4" />
                     {(chats[ev.id]?.length || 0) > 0 && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full" />}
                   </button>
-                  <button onClick={() => openEdit(ev)} className="p-2 rounded-xl hover:bg-secondary text-muted-foreground hover:text-primary transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); openEdit(ev); }} className="p-2 rounded-xl hover:bg-secondary text-muted-foreground hover:text-primary transition-colors">
                     <Edit2 className="w-4 h-4" />
                   </button>
+                  <div className="text-muted-foreground p-1 hover:text-primary transition-colors">
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${expandedId === ev.id ? "rotate-180" : ""}`} />
+                  </div>
                 </div>
               </div>
+
+              {expandedId === ev.id && (
+                <div onClick={(e) => e.stopPropagation()} className="mt-4 pt-4 border-t border-border space-y-3 mb-3 animate-fadeIn">
+                  <div>
+                    <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Deskripsi Kegiatan</h4>
+                    <p className="text-xs text-foreground mt-1 leading-relaxed bg-muted/40 p-3.5 rounded-xl border border-border/50">
+                      {ev.deskripsi || "Tidak ada deskripsi detail untuk kegiatan ini."}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
+                    <div className="bg-secondary/40 p-2.5 rounded-xl border border-border/50">
+                      <span className="text-[9px] text-muted-foreground block font-medium">Kategori</span>
+                      <span className="font-bold text-foreground mt-0.5 block">{ev.kategori || "Rapat"}</span>
+                    </div>
+                    <div className="bg-secondary/40 p-2.5 rounded-xl border border-border/50">
+                      <span className="text-[9px] text-muted-foreground block font-medium">Prioritas</span>
+                      <span className="font-bold text-foreground mt-0.5 block capitalize">{ev.prioritas || "Sedang"}</span>
+                    </div>
+                    <div className="bg-secondary/40 p-2.5 rounded-xl border border-border/50">
+                      <span className="text-[9px] text-muted-foreground block font-medium">Estimasi Peserta</span>
+                      <span className="font-bold text-foreground mt-0.5 block">{ev.pesertaCount || 0} orang</span>
+                    </div>
+                    <div className="bg-secondary/40 p-2.5 rounded-xl border border-border/50">
+                      <span className="text-[9px] text-muted-foreground block font-medium">Koordinat Peta</span>
+                      {ev.koordinatMaps ? (
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.koordinatMaps)}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+                          className="text-primary hover:underline font-bold mt-0.5 flex items-center gap-1">
+                          <Navigation className="w-3 h-3" /> {ev.koordinatMaps}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground mt-0.5 block font-semibold">—</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Dokumen chips */}
               {ev.files.length > 0 && (
@@ -668,7 +1000,7 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
                   {ev.files.map(f => {
                     const cfg = fileTipeCfg[f.tipe];
                     return (
-                      <a key={f.id} href={f.url || "#"} target="_blank" rel="noreferrer"
+                      <a key={f.id} href={f.url || "#"} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-semibold ${cfg.cls} hover:opacity-80 transition-opacity`}>
                         <FileText className="w-3 h-3" />{f.name.length > 28 ? f.name.slice(0, 25) + "…" : f.name}
                       </a>
@@ -679,15 +1011,16 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
 
               {/* Status pimpinan */}
               {ev.pejabatIds.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div onClick={(e) => e.stopPropagation()} className="mt-3 flex flex-wrap gap-2">
                   {ev.pejabatIds.map(pjbId => {
-                    const pjb = seedPejabat.find(p => p.id === pjbId);
+                    const pjb = pejabat.find(p => p.id === pjbId);
                     if (!pjb) return null;
                     const st = ev.statusPimpinan[pjbId] || "menunggu";
-                    const cfg = statusPimpinanCfg[st as keyof typeof statusPimpinanCfg];
+                    const cfg = statusPimpinanCfg[st as keyof typeof statusPimpinanCfg] || statusPimpinanCfg.menunggu;
                     return (
-                      <div key={pjbId} className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-semibold border ${cfg.bg} ${cfg.color}`}>
-                        {cfg.icon}<span>{pjb.nama.split(" ").slice(-2, -1).join("")}</span>· {cfg.label}
+                      <div key={pjbId} onClick={() => setSelectedPejabat(pjb)}
+                        className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-semibold border ${cfg.bg} ${cfg.color} cursor-pointer hover:scale-[1.02] transition-transform`}>
+                        {cfg.icon}<span>{pjb.nama.split(",")[0]}</span>· {cfg.label}
                       </div>
                     );
                   })}
@@ -697,7 +1030,7 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
 
             {/* Chat panel */}
             {showChat === ev.id && (
-              <div className="border-t border-border">
+              <div onClick={(e) => e.stopPropagation()} className="border-t border-border">
                 <div className="flex items-center justify-between px-5 py-2.5 bg-secondary/50">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="w-3.5 h-3.5 text-primary" />
@@ -706,7 +1039,7 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
                   </div>
                   <button className="text-[11px] text-primary font-semibold flex items-center gap-1 hover:underline"><Video className="w-3 h-3" />Video Call</button>
                 </div>
-                <div className="max-h-44 overflow-y-auto p-4 space-y-2 bg-background/50">
+                <div ref={chatScrollRef} className="max-h-44 overflow-y-auto p-4 space-y-2 bg-background/50">
                   {(chats[ev.id] || []).map(msg => (
                     <div key={msg.id} className={msg.type !== "text" ? "flex justify-center" : "flex gap-2"}>
                       {msg.type === "info" && <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 text-[11px] text-blue-700">{msg.isi}</div>}
@@ -816,7 +1149,7 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Tag Pejabat</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {seedPejabat.filter(p => p.status === "aktif").map(pjb => {
+                  {pejabat.filter(p => p.status === "aktif").map(pjb => {
                     const checked = (form.pejabatIds || []).includes(pjb.id);
                     return (
                       <button key={pjb.id} onClick={() => togglePejabat(pjb.id)} type="button"
@@ -867,13 +1200,116 @@ function AgendaManagement({ events, setEvents }: { events: Event[]; setEvents: (
           </div>
         </div>
       )}
+
+      {/* Detail Profil Pejabat Modal */}
+      {selectedPejabat && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedPejabat(null)}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-foreground">Detail Profil Pejabat</h3>
+              </div>
+              <button onClick={() => setSelectedPejabat(null)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 bg-secondary/10">
+              <div className="flex items-center gap-4 bg-card border border-border p-4 rounded-xl">
+                <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center text-lg font-bold flex-shrink-0">
+                  {selectedPejabat.inisial}
+                </div>
+                <div>
+                  <h4 className="font-bold text-foreground text-sm leading-snug">{selectedPejabat.nama}</h4>
+                  <p className="text-xs text-primary font-semibold mt-0.5">{selectedPejabat.jabatan}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{selectedPejabat.instansi}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 bg-card border border-border p-4 rounded-xl text-xs">
+                <div className="grid grid-cols-3 py-1 border-b border-border/50">
+                  <span className="text-muted-foreground font-medium">NIP</span>
+                  <span className="col-span-2 font-semibold text-foreground text-right">{selectedPejabat.nip || "—"}</span>
+                </div>
+                <div className="grid grid-cols-3 py-1 border-b border-border/50">
+                  <span className="text-muted-foreground font-medium">Eselon</span>
+                  <span className="col-span-2 font-semibold text-foreground text-right">{selectedPejabat.eselon || "—"}</span>
+                </div>
+                <div className="grid grid-cols-3 py-1 border-b border-border/50">
+                  <span className="text-muted-foreground font-medium">No. HP / WA</span>
+                  <span className="col-span-2 font-semibold text-foreground text-right">{selectedPejabat.noHP || "—"}</span>
+                </div>
+                <div className="grid grid-cols-3 py-1">
+                  <span className="text-muted-foreground font-medium">Status</span>
+                  <span className={`col-span-2 font-bold text-right ${selectedPejabat.status === "aktif" ? "text-emerald-600" : "text-amber-600"}`}>
+                    {selectedPejabat.status === "aktif" ? "Aktif" : "Pensiun / Non-Aktif"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <h5 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <History className="w-3.5 h-3.5 text-primary" /> Riwayat Jabatan & Mutasi
+                </h5>
+                <div className="space-y-2.5">
+                  {selectedPejabat.riwayat && selectedPejabat.riwayat.length > 0 ? (
+                    selectedPejabat.riwayat.map((rw) => (
+                      <div key={rw.id} className="bg-card border border-border p-3 rounded-xl text-xs">
+                        <div className="flex items-center justify-between font-bold text-foreground">
+                          <span className="capitalize text-primary text-[10px] bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">
+                            {rw.jenis}
+                          </span>
+                          <span className="text-muted-foreground text-[10px]">{rw.tanggal}</span>
+                        </div>
+                        <p className="mt-2 text-foreground font-semibold">
+                          {rw.jabatanLama === "—" ? "" : `${rw.jabatanLama} ➔ `}{rw.jabatanBaru}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {rw.instansiLama === "—" ? "" : `${rw.instansiLama} ➔ `}{rw.instansiBaru}
+                        </p>
+                        {rw.noSK && (
+                          <p className="text-[9px] font-mono bg-muted px-2 py-0.5 rounded mt-1.5 w-fit text-muted-foreground">
+                            SK: {rw.noSK}
+                          </p>
+                        )}
+                        {rw.keterangan && (
+                          <p className="text-[10px] text-muted-foreground mt-1.5 italic">
+                            "{rw.keterangan}"
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic text-center py-4 bg-card border border-border border-dashed rounded-xl">
+                      Belum ada riwayat jabatan tercatat.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {selectedPejabat.noHP && selectedPejabat.noHP !== "—" && (
+                <a href={`https://wa.me/${selectedPejabat.noHP.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-semibold shadow-sm transition-colors mt-2">
+                  <MessageSquare className="w-4 h-4" /> Hubungi via WhatsApp
+                </a>
+              )}
+            </div>
+            
+            <div className="px-6 py-4 border-t border-border flex justify-end flex-shrink-0">
+              <button onClick={() => setSelectedPejabat(null)}
+                className="px-4 py-2 text-xs border border-border rounded-xl hover:bg-muted text-muted-foreground font-semibold">
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── Pejabat Database ─────────────────────────────────────────────────────────
 
-function PejabatDatabase() {
+function PejabatDatabase({ pejabat, setPejabat }: { pejabat: Pejabat[]; setPejabat: (p: Pejabat[]) => void }) {
   const [selected, setSelected] = useState<Pejabat | null>(null);
   const [showRiwayat, setShowRiwayat] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -881,13 +1317,147 @@ function PejabatDatabase() {
   const [filterStatus, setFilterStatus] = useState("semua");
   const [rForm, setRForm] = useState<Partial<RiwayatPejabat>>({ jenis: "pelantikan" });
 
-  const filtered = seedPejabat.filter(p => {
+  // CRUD states
+  const [showPejabatForm, setShowPejabatForm] = useState(false);
+  const [editingPejabat, setEditingPejabat] = useState<Pejabat | null>(null);
+  const [pForm, setPForm] = useState<Partial<Pejabat>>({
+    nama: "",
+    jabatan: "",
+    instansi: "Pemerintah Provinsi Banten",
+    eselon: "Eselon II-A",
+    status: "aktif",
+    nip: "",
+    noHP: "",
+    password: "",
+  });
+
+  const filtered = pejabat.filter(p => {
     const matchS = p.nama.toLowerCase().includes(search.toLowerCase()) || p.jabatan.toLowerCase().includes(search.toLowerCase());
     const matchF = filterStatus === "semua" || p.status === filterStatus;
     return matchS && matchF;
   });
 
   const statusCls = { aktif: "bg-green-50 text-primary border-green-200", pensiun: "bg-gray-100 text-gray-500 border-gray-200", mutasi: "bg-amber-50 text-amber-700 border-amber-200" };
+
+  const openAddPejabat = () => {
+    setEditingPejabat(null);
+    setPForm({
+      nama: "",
+      jabatan: "",
+      instansi: "Pemerintah Provinsi Banten",
+      eselon: "Eselon II-A",
+      status: "aktif",
+      nip: "",
+      noHP: "",
+      password: "pimpinan",
+    });
+    setShowPejabatForm(true);
+  };
+
+  const openEditPejabat = (e: React.MouseEvent, pjb: Pejabat) => {
+    e.stopPropagation();
+    setEditingPejabat(pjb);
+    setPForm({ ...pjb });
+    setShowPejabatForm(true);
+  };
+
+  const handleDeletePejabat = (e: React.MouseEvent, pjbId: string) => {
+    e.stopPropagation();
+    if (window.confirm("Apakah Anda yakin ingin menghapus pejabat ini dari database?")) {
+      setPejabat(pejabat.filter(p => p.id !== pjbId));
+      if (selected?.id === pjbId) {
+        setSelected(null);
+      }
+    }
+  };
+
+  const savePejabat = () => {
+    if (!pForm.nama || !pForm.jabatan) return;
+
+    if (editingPejabat) {
+      const updated = pejabat.map(p => p.id === editingPejabat.id ? {
+        ...p,
+        ...pForm,
+        inisial: initials(pForm.nama || ""),
+      } as Pejabat : p);
+      setPejabat(updated);
+      if (selected?.id === editingPejabat.id) {
+        setSelected({
+          ...selected,
+          ...pForm,
+          inisial: initials(pForm.nama || ""),
+        } as Pejabat);
+      }
+    } else {
+      const newId = `PJB-${String(pejabat.length + 1).padStart(3, "0")}`;
+      const newPejabat: Pejabat = {
+        id: newId,
+        nama: pForm.nama!,
+        jabatan: pForm.jabatan!,
+        instansi: pForm.instansi || "Pemerintah Provinsi Banten",
+        eselon: pForm.eselon || "Eselon II-A",
+        inisial: initials(pForm.nama!),
+        status: (pForm.status as Pejabat["status"]) || "aktif",
+        noHP: pForm.noHP || "—",
+        nip: pForm.nip || "—",
+        password: pForm.password || "pimpinan",
+        riwayat: [
+          {
+            id: "R1",
+            jenis: "pelantikan",
+            jabatanLama: "—",
+            jabatanBaru: pForm.jabatan!,
+            instansiLama: "—",
+            instansiBaru: pForm.instansi || "Pemerintah Provinsi Banten",
+            tanggal: new Date().toISOString().split("T")[0],
+            noSK: "SK.GUB/INITIAL",
+            keterangan: "Pelantikan awal pejabat"
+          }
+        ]
+      };
+      setPejabat([...pejabat, newPejabat]);
+    }
+    setShowPejabatForm(false);
+  };
+
+  const saveRiwayat = () => {
+    if (!selected) return;
+    const newR: RiwayatPejabat = {
+      id: `R${selected.riwayat.length + 1}`,
+      jenis: rForm.jenis as RiwayatPejabat["jenis"] || "pelantikan",
+      jabatanLama: rForm.jabatanLama || "—",
+      jabatanBaru: rForm.jenis === "pensiun" ? "—" : (rForm.jabatanBaru || "—"),
+      instansiLama: rForm.instansiLama || "—",
+      instansiBaru: rForm.jenis === "pensiun" ? "—" : (rForm.instansiBaru || "—"),
+      tanggal: rForm.tanggal || new Date().toISOString().split("T")[0],
+      noSK: rForm.noSK || "—",
+      keterangan: rForm.keterangan || "",
+    };
+
+    const updatedPejabatList = pejabat.map(p => {
+      if (p.id === selected.id) {
+        let nextStatus: Pejabat["status"] = p.status;
+        if (newR.jenis === "mutasi") nextStatus = "mutasi";
+        if (newR.jenis === "pensiun") nextStatus = "pensiun";
+        if (newR.jenis === "pelantikan") nextStatus = "aktif";
+
+        return {
+          ...p,
+          status: nextStatus,
+          jabatan: newR.jenis === "pensiun" ? p.jabatan : newR.jabatanBaru,
+          instansi: newR.jenis === "pensiun" ? p.instansi : newR.instansiBaru,
+          riwayat: [...p.riwayat, newR],
+        } as Pejabat;
+      }
+      return p;
+    });
+
+    setPejabat(updatedPejabatList);
+    const updatedSel = updatedPejabatList.find(p => p.id === selected.id) || null;
+    setSelected(updatedSel);
+    setShowForm(false);
+    setRForm({ jenis: "pelantikan" });
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-7">
@@ -897,7 +1467,7 @@ function PejabatDatabase() {
           <h1 className="text-2xl font-bold text-foreground mt-1" style={{ fontFamily: "'Libre Baskerville', serif" }}>Data Pejabat</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Mutasi, Pelantikan, Pensiun</p>
         </div>
-        <button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-colors">
+        <button onClick={openAddPejabat} className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-colors">
           <UserPlus className="w-4 h-4" />Tambah Pejabat
         </button>
       </div>
@@ -918,7 +1488,7 @@ function PejabatDatabase() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
         {filtered.map(pjb => (
           <div key={pjb.id} className={`bg-card border rounded-2xl p-5 hover:shadow-sm transition-all group cursor-pointer ${selected?.id === pjb.id ? "border-primary/40 ring-2 ring-primary/10" : "border-border hover:border-primary/20"}`}
             onClick={() => setSelected(selected?.id === pjb.id ? null : pjb)}>
@@ -933,9 +1503,19 @@ function PejabatDatabase() {
                     <p className="text-xs text-primary font-semibold mt-0.5">{pjb.jabatan}</p>
                     <p className="text-xs text-muted-foreground">{pjb.instansi}</p>
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 ${statusCls[pjb.status]}`}>
-                    {pjb.status === "aktif" ? "Aktif" : pjb.status === "pensiun" ? "Pensiun" : "Mutasi"}
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusCls[pjb.status]}`}>
+                      {pjb.status === "aktif" ? "Aktif" : pjb.status === "pensiun" ? "Pensiun" : "Mutasi"}
+                    </span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={(e) => openEditPejabat(e, pjb)} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors">
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={(e) => handleDeletePejabat(e, pjb.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-destructive transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-3 pt-3 border-t border-border mt-2">
                   <span className="text-[11px] font-mono text-muted-foreground">{pjb.eselon}</span>
@@ -952,7 +1532,7 @@ function PejabatDatabase() {
                   <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5"><History className="w-3.5 h-3.5 text-primary" />Riwayat Jabatan</h4>
                   <button onClick={() => setShowForm(true)}
                     className="flex items-center gap-1 text-[11px] text-primary font-semibold hover:underline">
-                    <Plus className="w-3 h-3" />Input {["Mutasi", "Pelantikan", "Pensiun"][0]}
+                    <Plus className="w-3 h-3" />Input Perubahan Jabatan
                   </button>
                 </div>
                 <div className="space-y-2.5">
@@ -1064,8 +1644,93 @@ function PejabatDatabase() {
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
               <button onClick={() => setShowForm(false)} className="px-5 py-2.5 text-sm border border-border rounded-xl hover:bg-muted text-muted-foreground">Batal</button>
-              <button onClick={() => setShowForm(false)} className="flex items-center gap-2 px-5 py-2.5 text-sm bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">
+              <button onClick={saveRiwayat} className="flex items-center gap-2 px-5 py-2.5 text-sm bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">
                 <Save className="w-4 h-4" />Simpan Riwayat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tambah/Edit Pejabat Modal */}
+      {showPejabatForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-lg">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-5 bg-primary rounded-full" />
+                <h3 className="font-bold text-foreground">{editingPejabat ? "Edit Data Pejabat" : "Tambah Pejabat Baru"}</h3>
+              </div>
+              <button onClick={() => setShowPejabatForm(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Nama Lengkap *</label>
+                <input value={pForm.nama || ""} onChange={e => setPForm({ ...pForm, nama: e.target.value })} placeholder="Nama beserta gelar"
+                  className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Jabatan *</label>
+                  <input value={pForm.jabatan || ""} onChange={e => setPForm({ ...pForm, jabatan: e.target.value })} placeholder="Gubernur, Kadis, Sekda..."
+                    className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Instansi</label>
+                  <input value={pForm.instansi || ""} onChange={e => setPForm({ ...pForm, instansi: e.target.value })} placeholder="Pemerintah Provinsi Banten"
+                    className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">NIP</label>
+                  <input value={pForm.nip || ""} onChange={e => setPForm({ ...pForm, nip: e.target.value })} placeholder="18 digit angka"
+                    className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">No. HP (WhatsApp)</label>
+                  <input value={pForm.noHP || ""} onChange={e => setPForm({ ...pForm, noHP: e.target.value })} placeholder="+628..."
+                    className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Golongan / Eselon</label>
+                  <select value={pForm.eselon || "Eselon II-A"} onChange={e => setPForm({ ...pForm, eselon: e.target.value })}
+                    className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none appearance-none">
+                    <option>Jabatan Politik</option>
+                    <option>Eselon I-A</option>
+                    <option>Eselon II-A</option>
+                    <option>Eselon II-B</option>
+                    <option>Eselon III-A</option>
+                    <option>Lainnya</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Status Kepegawaian</label>
+                  <select value={pForm.status || "aktif"} onChange={e => setPForm({ ...pForm, status: e.target.value as Pejabat["status"] })}
+                    className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none appearance-none font-semibold capitalize">
+                    <option value="aktif">Aktif</option>
+                    <option value="mutasi">Mutasi</option>
+                    <option value="pensiun">Pensiun</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Kata Sandi Login Pimpinan</label>
+                <input value={pForm.password || ""} onChange={e => setPForm({ ...pForm, password: e.target.value })} placeholder="pimpinan"
+                  className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50 font-mono text-xs" />
+                <p className="text-[10px] text-muted-foreground mt-1">Digunakan untuk login pimpinan secara mandiri. Default: pimpinan</p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
+              <button onClick={() => setShowPejabatForm(false)} className="px-5 py-2.5 text-sm border border-border rounded-xl hover:bg-muted text-muted-foreground">Batal</button>
+              <button onClick={savePejabat} className="flex items-center gap-2 px-5 py-2.5 text-sm bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">
+                <Save className="w-4 h-4" />Simpan Pejabat
               </button>
             </div>
           </div>
@@ -1144,25 +1809,83 @@ function DokumenArsip({ events }: { events: Event[] }) {
 
 // ─── Pimpinan View ─────────────────────────────────────────────────────────────
 
-function PimpinanView({ name, onLogout }: { name: string; onLogout: () => void }) {
-  const todayEvs = seedEvents.filter(e => e.tanggal === TODAY);
-  const [myStatus, setMyStatus] = useState<Record<string, Event["statusPimpinan"][string]>>({ "EVT-001": "hadir", "EVT-002": "menunggu" });
+function PimpinanView({ name, onLogout, pejabat, setPejabat, events, setEvents, pejabatId, chats, setChats }: { name: string; onLogout: () => void; pejabat: Pejabat[]; setPejabat: (p: Pejabat[]) => void; events: Event[]; setEvents: (e: Event[]) => void; pejabatId: string; chats: Record<string, ChatMsg[]>; setChats: React.Dispatch<React.SetStateAction<Record<string, ChatMsg[]>>> }) {
+  const todayEvs = events.filter(e => e.tanggal === TODAY);
   const [active, setActive] = useState<string | null>(todayEvs[0]?.id || null);
   const [showAlert, setShowAlert] = useState(true);
   const [chatMsg, setChatMsg] = useState("");
-  const [chats, setChats] = useState<Record<string, ChatMsg[]>>(seedChats);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Change Password states
+  const [showPassModal, setShowPassModal] = useState(false);
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [passErr, setPassErr] = useState("");
+  const [passSuccess, setPassSuccess] = useState("");
+  const [showHierarchy, setShowHierarchy] = useState(false);
+
+  const handleChangePassword = () => {
+    setPassErr("");
+    setPassSuccess("");
+    if (!newPass) {
+      setPassErr("Kata sandi baru tidak boleh kosong.");
+      return;
+    }
+    if (newPass !== confirmPass) {
+      setPassErr("Konfirmasi kata sandi tidak cocok.");
+      return;
+    }
+
+    const updated = pejabat.map(p => {
+      if (p.id === pejabatId) {
+        return { ...p, password: newPass };
+      }
+      return p;
+    });
+    setPejabat(updated);
+    setPassSuccess("Kata sandi berhasil diperbarui!");
+    setTimeout(() => {
+      setShowPassModal(false);
+      setNewPass("");
+      setConfirmPass("");
+      setPassSuccess("");
+    }, 1500);
+  };
 
   const sendChat = (evId: string) => {
     if (!chatMsg.trim()) return;
     const msg: ChatMsg = { id: `cm${Date.now()}`, sender: name.split(",")[0], isi: chatMsg, waktu: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }), type: "text" };
     setChats(prev => ({ ...prev, [evId]: [...(prev[evId] || []), msg] }));
     setChatMsg("");
+    setTimeout(() => {
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      }
+    }, 50);
+  };
+
+  const setEventStatus = (evId: string, status: Event["statusPimpinan"][string]) => {
+    const updated = events.map(e => {
+      if (e.id === evId) {
+        return {
+          ...e,
+          statusPimpinan: {
+            ...e.statusPimpinan,
+            [pejabatId]: status
+          }
+        };
+      }
+      return e;
+    });
+    setEvents(updated);
   };
 
   const statusBtns: { val: Event["statusPimpinan"][string]; label: string; icon: React.ReactNode; cls: string }[] = [
-    { val: "otw",   label: "OTW",   icon: <Car className="w-5 h-5" />,           cls: "bg-blue-500 text-white hover:bg-blue-600" },
-    { val: "tunda", label: "TUNDA", icon: <AlertTriangle className="w-5 h-5" />, cls: "bg-amber-500 text-white hover:bg-amber-600" },
-    { val: "batal", label: "BATAL", icon: <XCircle className="w-5 h-5" />,       cls: "bg-red-500 text-white hover:bg-red-600" },
+    { val: "hadir",      label: "HADIR",      icon: <CheckCircle className="w-4 h-4" />,   cls: "bg-emerald-600 text-white hover:bg-emerald-700" },
+    { val: "otw",        label: "OTW",        icon: <Car className="w-4 h-4" />,           cls: "bg-blue-500 text-white hover:bg-blue-600" },
+    { val: "tunda",      label: "TUNDA",      icon: <AlertTriangle className="w-4 h-4" />, cls: "bg-amber-500 text-white hover:bg-amber-600" },
+    { val: "diwakilkan", label: "WAKIL",      icon: <UserMinus className="w-4 h-4" />,     cls: "bg-purple-600 text-white hover:bg-purple-700" },
+    { val: "batal",      label: "BATAL",      icon: <XCircle className="w-4 h-4" />,       cls: "bg-red-500 text-white hover:bg-red-600" },
   ];
 
   return (
@@ -1183,6 +1906,12 @@ function PimpinanView({ name, onLogout }: { name: string; onLogout: () => void }
             <p className="text-white font-bold text-sm">{name.split(",")[0].split(" ").slice(1, 4).join(" ")}</p>
           </div>
           <div className="flex items-center gap-3">
+            <button onClick={() => setShowHierarchy(true)} className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors" title="Hierarki Pejabat">
+              <Users className="w-4 h-4" />
+            </button>
+            <button onClick={() => setShowPassModal(true)} className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors" title="Ganti Kata Sandi">
+              <Key className="w-4 h-4" />
+            </button>
             <div className="relative"><Bell className="w-5 h-5 text-white/70" /><span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">2</span></div>
             <button onClick={onLogout} className="text-white/60 hover:text-white"><LogOut className="w-5 h-5" /></button>
           </div>
@@ -1197,8 +1926,8 @@ function PimpinanView({ name, onLogout }: { name: string; onLogout: () => void }
 
         {todayEvs.map(ev => {
           const isActive = active === ev.id;
-          const myEv = myStatus[ev.id] || "menunggu";
-          const myCfg = statusPimpinanCfg[myEv as keyof typeof statusPimpinanCfg];
+          const myEv = ev.statusPimpinan[pejabatId] || "menunggu";
+          const myCfg = statusPimpinanCfg[myEv as keyof typeof statusPimpinanCfg] || statusPimpinanCfg.menunggu;
 
           return (
             <div key={ev.id} className={`bg-card rounded-2xl shadow-sm overflow-hidden border-2 transition-all ${isActive ? "border-primary" : "border-transparent"}`}>
@@ -1206,7 +1935,7 @@ function PimpinanView({ name, onLogout }: { name: string; onLogout: () => void }
               <div className={`px-5 py-4 ${ev.status === "berlangsung" ? "" : "bg-secondary"}`}
                 style={ev.status === "berlangsung" ? { background: "linear-gradient(135deg, #0f3d26, #1a5c38)" } : {}}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-[11px] font-bold ${ev.status === "berlangsung" ? "text-white/70" : "text-muted-foreground"}`}>{eventStatusCfg[ev.status].label.toUpperCase()} · {ev.kategori}</span>
+                  <span className={`text-[11px] font-bold ${ev.status === "berlangsung" ? "text-white/70" : "text-muted-foreground"}`}>{((eventStatusCfg[ev.status] || eventStatusCfg.akan_datang).label).toUpperCase()} · {ev.kategori}</span>
                   {ev.files.length > 0 && <span className={`flex items-center gap-1 text-[10px] font-semibold ${ev.status === "berlangsung" ? "text-white/60" : "text-primary"}`}><FileCheck className="w-3 h-3" />{ev.files.length} dok</span>}
                 </div>
                 <h2 className={`font-bold text-base leading-snug ${ev.status === "berlangsung" ? "text-white" : "text-foreground"}`} style={{ fontFamily: "'Libre Baskerville', serif" }}>{ev.judul}</h2>
@@ -1247,11 +1976,11 @@ function PimpinanView({ name, onLogout }: { name: string; onLogout: () => void }
                 {/* Status buttons */}
                 <div>
                   <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2">Kirim Status</p>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-5 gap-1.5">
                     {statusBtns.map(btn => (
-                      <button key={btn.val} onClick={() => setMyStatus(prev => ({ ...prev, [ev.id]: btn.val }))}
-                        className={`flex flex-col items-center gap-1.5 py-3 rounded-xl text-sm font-bold transition-all ${myStatus[ev.id] === btn.val ? btn.cls + " ring-2 ring-offset-1 ring-primary/30 scale-[1.03]" : "bg-muted text-muted-foreground hover:bg-secondary"}`}>
-                        {btn.icon}<span className="text-xs">{btn.label}</span>
+                      <button key={btn.val} onClick={() => setEventStatus(ev.id, btn.val)}
+                        className={`flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-bold transition-all ${myEv === btn.val ? btn.cls + " ring-2 ring-offset-1 ring-primary/30 scale-[1.03]" : "bg-muted text-muted-foreground hover:bg-secondary"}`}>
+                        {btn.icon}<span className="text-[9px] mt-0.5 tracking-tight font-semibold uppercase">{btn.label}</span>
                       </button>
                     ))}
                   </div>
@@ -1296,7 +2025,7 @@ function PimpinanView({ name, onLogout }: { name: string; onLogout: () => void }
                         <div className="flex items-center gap-2"><MessageSquare className="w-3.5 h-3.5 text-primary" /><span className="text-xs font-bold">Grup Chat Acara</span></div>
                         <button className="text-[11px] text-primary font-semibold flex items-center gap-1"><Video className="w-3 h-3" />VC</button>
                       </div>
-                      <div className="max-h-40 overflow-y-auto p-3 space-y-2">
+                      <div ref={chatScrollRef} className="max-h-40 overflow-y-auto p-3 space-y-2">
                         {(chats[ev.id] || []).map(msg => (
                           <div key={msg.id} className={msg.type !== "text" ? "flex justify-center" : "flex gap-2"}>
                             {msg.type === "info" && <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 text-[11px] text-blue-700">{msg.isi}</div>}
@@ -1331,19 +2060,164 @@ function PimpinanView({ name, onLogout }: { name: string; onLogout: () => void }
           </div>
         )}
       </div>
+
+      {/* Change Password Modal */}
+      {showPassModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Key className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-foreground">Ganti Kata Sandi</h3>
+              </div>
+              <button onClick={() => setShowPassModal(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              {passErr && <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-600 font-semibold">{passErr}</div>}
+              {passSuccess && <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs text-primary font-semibold">{passSuccess}</div>}
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Kata Sandi Baru</label>
+                <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} placeholder="Masukkan kata sandi baru"
+                  className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Konfirmasi Kata Sandi Baru</label>
+                <input type="password" value={confirmPass} onChange={e => setConfirmPass(e.target.value)} placeholder="Ulangi kata sandi baru"
+                  className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
+              <button onClick={() => setShowPassModal(false)} className="px-5 py-2.5 text-sm border border-border rounded-xl hover:bg-muted text-muted-foreground">Batal</button>
+              <button onClick={handleChangePassword} className="px-5 py-2.5 text-sm bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">Simpan</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hierarchy Modal */}
+      {showHierarchy && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-foreground">Hierarki & Kontak Pejabat</h3>
+              </div>
+              <button onClick={() => setShowHierarchy(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6 overflow-y-auto space-y-5 flex-1 bg-secondary/10">
+              {["Jabatan Politik", "Eselon I-A", "Eselon II-A", "Eselon II-B", "Eselon III-A"].map(level => {
+                const group = pejabat.filter(p => p.eselon === level && p.status === "aktif");
+                if (group.length === 0) return null;
+                return (
+                  <div key={level} className="space-y-2">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 px-2 py-1 rounded w-fit">{level}</p>
+                    <div className="space-y-2">
+                      {group.map(pjb => (
+                        <div key={pjb.id} className="bg-card border border-border rounded-xl p-3.5 flex items-start gap-3 shadow-sm hover:border-primary/20 transition-all">
+                          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary flex-shrink-0">{pjb.inisial}</div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-foreground text-xs leading-tight">{pjb.nama}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">{pjb.jabatan}</p>
+                            <p className="text-[10px] text-muted-foreground/60 font-mono mt-0.5">NIP. {pjb.nip}</p>
+                          </div>
+                          {pjb.kontak && (
+                            <a href={`https://wa.me/${pjb.kontak.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer"
+                              className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0" title="Hubungi WhatsApp">
+                              <Phone className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex justify-end px-6 py-4 border-t border-border flex-shrink-0">
+              <button onClick={() => setShowHierarchy(false)} className="px-5 py-2.5 text-sm bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold shadow-sm">Tutup</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// ─── Root ──────────────────────────────────────────────────────────────────────
-
 export default function App() {
-  const [auth, setAuth] = useState<{ role: Role; name: string } | null>(null);
+  const [auth, setAuth] = useState<{ role: Role; name: string; id?: string } | null>(null);
   const [view, setView] = useState<View>("dashboard");
   const [events, setEvents] = useState<Event[]>(seedEvents);
+  const [pejabat, setPejabat] = useState<Pejabat[]>(seedPejabat);
+  const [chats, setChats] = useState<Record<string, ChatMsg[]>>(seedChats);
 
-  if (!auth) return <LoginPage onLogin={(role, name) => setAuth({ role, name })} />;
-  if (auth.role === "pimpinan") return <PimpinanView name={auth.name} onLogout={() => setAuth(null)} />;
+  useEffect(() => {
+    const checkSchedule = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const currentDateString = `${year}-${month}-${day}`;
+      
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const currentTimeString = `${hours}:${minutes}`;
+
+      setEvents(prevEvents => {
+        let changed = false;
+        const nextEvents = prevEvents.map(ev => {
+          if (ev.status === "akan_datang") {
+            const evDate = ev.tanggal;
+            const evTime = ev.waktu;
+            const datePassed = evDate < currentDateString || (evDate === currentDateString && evTime <= currentTimeString);
+            
+            if (datePassed) {
+              changed = true;
+              
+              // Add a system chat message to the chats
+              const sysMsg: ChatMsg = {
+                id: `sys-${Date.now()}-${ev.id}`,
+                sender: "Sistem ProAktif",
+                isi: `⚡ Waktu agenda telah masuk. Status otomatis diubah menjadi BERLANGSUNG.`,
+                waktu: currentTimeString,
+                type: "info"
+              };
+              setChats(prevChats => ({
+                ...prevChats,
+                [ev.id]: [...(prevChats[ev.id] || []), sysMsg]
+              }));
+
+              return { ...ev, status: "berlangsung" as const };
+            }
+          }
+          return ev;
+        });
+        return changed ? nextEvents : prevEvents;
+      });
+    };
+
+    checkSchedule();
+    const interval = setInterval(checkSchedule, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!auth) return <LoginPage onLogin={(role, name, id) => setAuth({ role, name, id })} pejabat={pejabat} />;
+  if (auth.role === "pimpinan") {
+    return (
+      <PimpinanView
+        name={auth.name}
+        onLogout={() => setAuth(null)}
+        pejabat={pejabat}
+        setPejabat={setPejabat}
+        events={events}
+        setEvents={setEvents}
+        pejabatId={auth.id || "PJB-001"}
+        chats={chats}
+        setChats={setChats}
+      />
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background overflow-hidden" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -1360,9 +2234,9 @@ export default function App() {
             <span>·</span><span>Intranet Pemerintah</span>
           </div>
         </header>
-        {view === "dashboard" && <AdminDashboard events={events} setView={setView} />}
-        {view === "agenda"    && <AgendaManagement events={events} setEvents={setEvents} />}
-        {view === "pejabat"   && <PejabatDatabase />}
+        {view === "dashboard" && <AdminDashboard events={events} setView={setView} pejabat={pejabat} />}
+        {view === "agenda"    && <AgendaManagement events={events} setEvents={setEvents} pejabat={pejabat} chats={chats} setChats={setChats} />}
+        {view === "pejabat"   && <PejabatDatabase pejabat={pejabat} setPejabat={setPejabat} />}
         {view === "dokumen"   && <DokumenArsip events={events} />}
       </div>
     </div>
