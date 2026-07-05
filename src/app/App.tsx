@@ -60,7 +60,7 @@ interface Event {
   status: "akan_datang" | "berlangsung" | "selesai" | "dibatalkan";
   prioritas: "tinggi" | "sedang" | "rendah";
   koordinatMaps: string;
-  statusPimpinan: Record<string, "menunggu" | "otw" | "tunda" | "batal" | "hadir">;
+  statusPimpinan: Record<string, "menunggu" | "otw" | "tunda" | "batal" | "hadir" | "diwakilkan">;
   notifikasi: boolean;
   kategori: string;
   pesertaCount: number;
@@ -2122,8 +2122,8 @@ function PimpinanView({ name, onLogout, pejabat, setPejabat, events, setEvents, 
                             <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">{pjb.jabatan}</p>
                             <p className="text-[10px] text-muted-foreground/60 font-mono mt-0.5">NIP. {pjb.nip}</p>
                           </div>
-                          {pjb.kontak && (
-                            <a href={`https://wa.me/${pjb.kontak.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer"
+                          {pjb.noHP && (
+                            <a href={`https://wa.me/${pjb.noHP.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer"
                               className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors flex-shrink-0" title="Hubungi WhatsApp">
                               <Phone className="w-3.5 h-3.5" />
                             </a>
