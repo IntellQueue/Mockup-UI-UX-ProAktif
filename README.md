@@ -460,4 +460,59 @@ CREATE TABLE chats (
 
 ---
 
+### 4. Kebijakan Retensi Data & Pembersihan Otomatis (Data Retention & Auto-Clean)
+
+#### A. Analisis Keamanan & Penyimpanan
+1.  **Ketika Agenda Dihapus (Hard Delete)**:
+    *   **Ya, data chat & dokumen otomatis terhapus**. Karena skema DDL kita menggunakan constraint `ON DELETE CASCADE` pada foreign key `event_id` di tabel `chats` dan `uploaded_files`.
+    *   Begitu baris agenda dihapus dari tabel `events`, seluruh baris pesan koordinasi dan berkas lampiran yang merujuk pada `event_id` tersebut akan **langsung terhapus secara permanen** dari database RDBMS.
+2.  **Ketika Agenda Selesai (`status = 'selesai'`)**:
+    *   Jika hanya statusnya yang diubah menjadi "Selesai" (namun baris datanya tidak dihapus dari dashboard), **data chat tidak akan terhapus secara otomatis**.
+    *   Hal ini berpotensi menyebabkan **kebocoran data** jika database diretas di kemudian hari (karena koordinasi pimpinan sering memuat rute perjalanan, info pengamanan, dll.), serta menyebabkan **pemborosan ruang penyimpanan (storage bloat)**.
+
+#### B. Rekomendasi Solusi: Kebijakan Retensi 7 Hari (7-Day Retention Policy)
+Untuk mengatasinya, sangat direkomendasikan mengimplementasikan **Auto-Clean Daemon / Cron Job** dengan aturan:
+*   Pesan chat pada agenda yang sudah berstatus `selesai` atau `dibatalkan` akan **dihapus otomatis setelah 7 hari**.
+*   Metadata utama (seperti judul agenda dan siapa pimpinan yang hadir) tetap dipertahankan untuk kebutuhan statistik/laporan historis birokrasi, namun isi obrolan koordinasi (`chats.isi`) dan file fisik pendukung (`uploaded_files`) akan dibersihkan secara permanen.
+
+#### C. Flowchart Alur Pembersihan Data Otomatis
+
+Berikut adalah alur logika pembersihan data chat pada sistem:
+
+```mermaid
+flowchart TD
+    Start([1. Daemon / Cron Job Berjalan Berkala]) --> QueryEvents[2. Cari Event dengan Status 'selesai' atau 'dibatalkan']
+    QueryEvents --> CheckTime{3. Apakah Waktu Selesai > 7 Hari?}
+    CheckTime -- Tidak --> Skip[4. Lewati & Tunggu Jadwal Berikutnya]
+    CheckTime -- Ya --> DeleteStorage[5. Hapus File Fisik di Cloud Storage melalui API]
+    DeleteStorage --> DeleteDB[6. Hapus Data di Tabel chats & uploaded_files]
+    DeleteDB --> LogAudit[7. Catat Log Pembersihan ke Audit Trail tanpa Isi Pesan]
+    LogAudit --> End([8. Selesai])
+```
+
+#### D. Implementasi Script SQL Auto-Clean (MySQL Event Scheduler)
+Jika menggunakan MySQL/MariaDB, pembersihan ini dapat didelegasikan langsung ke tingkat database menggunakan **Event Scheduler**:
+
+```sql
+-- 1. Pastikan Event Scheduler aktif di server database
+SET GLOBAL event_scheduler = ON;
+
+-- 2. Buat Event pembersihan otomatis yang berjalan setiap hari pukul 02.00 WIB
+CREATE EVENT IF NOT EXISTS auto_clean_expired_chats
+ON SCHEDULE EVERY 1 DAY
+STARTS (CURRENT_DATE + INTERVAL 1 DAY + INTERVAL 2 HOUR)
+DO
+BEGIN
+    -- Menghapus data obrolan pada agenda yang sudah selesai/batal lebih dari 7 hari
+    DELETE FROM chats 
+    WHERE event_id IN (
+        SELECT id FROM events 
+        WHERE status IN ('selesai', 'dibatalkan')
+    )
+    AND created_at < NOW() - INTERVAL 7 DAY;
+END;
+```
+
+---
+
 *ProAktif - Biro Administrasi Pimpinan Pemerintah Provinsi Banten.*
