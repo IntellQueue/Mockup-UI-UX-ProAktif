@@ -116,6 +116,14 @@ Jika aplikasi **ProAktif** dideploy menjadi aplikasi produksi yang nyata, kita m
 
 Berikut adalah rancangan skema database, tabel-tabel yang harus dibuat, serta **Entity Relationship Diagram (ERD)** untuk mendukung seluruh fitur ProAktif.
 
+### 📊 Flowchart Alur Sistem Protokoler
+
+Sebelum melihat rancangan database, berikut adalah flowchart alur kerja sistem koordinasi protokoler dan pimpinan pada ProAktif:
+
+![Flowchart Protokoler ProAktif](src/imports/Flowchart_Protokoler_ProAktif-Protokoler_ProAktif.drawio.png)
+
+---
+
 ### 1. Entity Relationship Diagram (ERD)
 
 Berikut adalah diagram relasi entitas menggunakan notasi **Mermaid.js** yang otomatis dirender oleh GitHub/Markdown viewer:
